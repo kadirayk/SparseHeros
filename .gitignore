@@ -10,3 +10,5 @@ heros-trunk.jar
 /reports
 /debug
 /target/
+/.idea
+*.iml
