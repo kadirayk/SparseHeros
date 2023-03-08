@@ -1,11 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4774d163-e3b3-4a90-a5ec-bd890f49629d" name="Default Changelist" comment="standalone heros extension">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/heros/sparse/SparseCFGBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/heros/sparse/SparseCFGBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/heros/sparse/SparseCFGCache.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/heros/sparse/SparseCFGCache.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/heros/sparse/SparseIDESolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/heros/sparse/SparseIDESolver.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
         <option name="mavenHome" value="$APPLICATION_HOME_DIR$/plugins/maven/lib/maven3" />
       </MavenGeneralSettings>
     </option>
+  </component>
+  <component name="MavenRunner">
+    <option name="skipTests" value="true" />
+  </component>
+  <component name="ProjectId" id="2M2ji6Docgm4ztCsZ051nkqywNm" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="SONARLINT_PRECOMMIT_ANALYSIS" value="false" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
   </component>
   <component name="RunManager">
     <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
@@ -19,5 +58,86 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4774d163-e3b3-4a90-a5ec-bd890f49629d" name="Default Changelist" comment="" />
+      <created>1676972695823</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1676972695823</updated>
+      <workItem from="1676972696918" duration="27914000" />
+    </task>
+    <task id="LOCAL-00001" summary="standalone heros extension">
+      <created>1676972835861</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1676972835861</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="standalone heros extension" />
+    <option name="LAST_COMMIT_MESSAGE" value="standalone heros extension" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="417" y="84" key="CommitChangelistDialog2" timestamp="1678223635617">
+      <screen x="0" y="23" width="1680" height="971" />
+    </state>
+    <state x="417" y="84" key="CommitChangelistDialog2/0.23.1680.971@0.23.1680.971" timestamp="1678223635617" />
+    <state width="2518" height="258" key="GridCell.Tab.0.bottom" timestamp="1678282114971">
+      <screen x="0" y="23" width="2560" height="1361" />
+    </state>
+    <state width="1638" height="155" key="GridCell.Tab.0.bottom/0.23.1680.971@0.23.1680.971" timestamp="1678223636370" />
+    <state width="2518" height="258" key="GridCell.Tab.0.bottom/0.23.2560.1361@0.23.2560.1361" timestamp="1678282114971" />
+    <state width="2518" height="258" key="GridCell.Tab.0.center" timestamp="1678282114970">
+      <screen x="0" y="23" width="2560" height="1361" />
+    </state>
+    <state width="1638" height="155" key="GridCell.Tab.0.center/0.23.1680.971@0.23.1680.971" timestamp="1678223636369" />
+    <state width="2518" height="258" key="GridCell.Tab.0.center/0.23.2560.1361@0.23.2560.1361" timestamp="1678282114970" />
+    <state width="2518" height="258" key="GridCell.Tab.0.left" timestamp="1678282114970">
+      <screen x="0" y="23" width="2560" height="1361" />
+    </state>
+    <state width="1638" height="155" key="GridCell.Tab.0.left/0.23.1680.971@0.23.1680.971" timestamp="1678223636369" />
+    <state width="2518" height="258" key="GridCell.Tab.0.left/0.23.2560.1361@0.23.2560.1361" timestamp="1678282114970" />
+    <state width="2518" height="258" key="GridCell.Tab.0.right" timestamp="1678282114970">
+      <screen x="0" y="23" width="2560" height="1361" />
+    </state>
+    <state width="1638" height="155" key="GridCell.Tab.0.right/0.23.1680.971@0.23.1680.971" timestamp="1678223636370" />
+    <state width="2518" height="258" key="GridCell.Tab.0.right/0.23.2560.1361@0.23.2560.1361" timestamp="1678282114970" />
+    <state x="440" y="248" key="Vcs.Push.Dialog.v2" timestamp="1676972841780">
+      <screen x="0" y="23" width="1680" height="971" />
+    </state>
+    <state x="440" y="248" key="Vcs.Push.Dialog.v2/0.23.1680.971@0.23.1680.971" timestamp="1676972841780" />
+    <state x="987" y="458" width="586" height="490" key="find.popup" timestamp="1678272005069">
+      <screen x="0" y="23" width="2560" height="1361" />
+    </state>
+    <state x="648" y="333" width="568" height="518" key="find.popup/0.23.1680.971@0.23.1680.971" timestamp="1678222339626" />
+    <state x="987" y="458" width="586" height="490" key="find.popup/0.23.2560.1361@0.23.2560.1361" timestamp="1678272005069" />
+    <state x="983" y="486" key="refactoring.ChangeSignatureDialog" timestamp="1678269448113">
+      <screen x="0" y="23" width="2560" height="1361" />
+    </state>
+    <state x="983" y="486" key="refactoring.ChangeSignatureDialog/0.23.2560.1361@0.23.2560.1361" timestamp="1678269448113" />
+    <state x="945" y="334" width="670" height="676" key="search.everywhere.popup" timestamp="1678281925990">
+      <screen x="0" y="23" width="2560" height="1361" />
+    </state>
+    <state x="620" y="245" width="670" height="483" key="search.everywhere.popup/0.23.1680.971@0.23.1680.971" timestamp="1678222840215" />
+    <state x="945" y="334" width="670" height="676" key="search.everywhere.popup/0.23.2560.1361@0.23.2560.1361" timestamp="1678281925990" />
   </component>
 </project>

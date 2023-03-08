@@ -196,7 +196,7 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>> {
         if (sparseCFGBuilder == null) {
             throw new RuntimeException("SparseCFGBuilder implementation must be set by the sub class");
         }
-        this.sparseCFGCache = new SparseCFGCache(sparseCFGBuilder);
+        this.sparseCFGCache = SparseCFGCache.getInstance(sparseCFGBuilder);
     }
 
     /**

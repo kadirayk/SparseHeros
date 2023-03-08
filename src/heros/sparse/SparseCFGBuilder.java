@@ -8,5 +8,5 @@ package heros.sparse;
  */
 public interface SparseCFGBuilder<N,M,D> {
 
-    SparseCFG<N, D> buildSparseCFG(M m, D d);
+    SparseCFG<N, D> buildSparseCFG(M m, D d, SparseCFGQueryStat queryStat);
 }
