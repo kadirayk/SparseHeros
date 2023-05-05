@@ -142,6 +142,8 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>> {
 
     protected SparseCFGBuilder sparseCFGBuilder;
 
+    private boolean disableReturnSiteSparsification = true;
+
     /**
      * Creates a solver for the given problem, which caches flow functions and edge functions.
      * The solver must then be started by calling {@link #solve()}.
@@ -393,34 +395,50 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>> {
                 }
             }
         }
-        //line 17-19 of Naeem/Lhotak/Rodriguez
-        //process intra-procedural flows along call-to-return flow functions
-        M p = icfg.getMethodOf(n);
-        for (N returnSiteN : returnSiteNs) {
-            FlowFunction<D> callToReturnFlowFunction = flowFunctions.getCallToReturnFlowFunction(n, returnSiteN);
-            flowFunctionConstructionCount++;
-            Set<D> returnFacts = computeCallToReturnFlowFunction(callToReturnFlowFunction, d1, d2);
-           // saveEdges(n, returnSiteN, d2, returnFacts, false);
-            // TODO: check effect save edges on construction time
-            for (D d3 : returnFacts) {
-                SparseCFG<N, D> G_p_d3 = sparseCFGCache.getSparseCFG(p, d3);
-                List<N> nextUses = G_p_d3.getNextUses(n);
-                if(nextUses.size() > 1){
-                    // propagate the d to the correct next stmt
-                    for(N d3_nextUse: nextUses){
-                        if(d3_nextUse.equals(returnSiteN)){
+
+        if (disableReturnSiteSparsification) {
+            //line 17-19 of Naeem/Lhotak/Rodriguez
+            //process intra-procedural flows along call-to-return flow functions
+            for (N returnSiteN : returnSiteNs) {
+                FlowFunction<D> callToReturnFlowFunction = flowFunctions.getCallToReturnFlowFunction(n, returnSiteN);
+                flowFunctionConstructionCount++;
+                Set<D> returnFacts = computeCallToReturnFlowFunction(callToReturnFlowFunction, d1, d2);
+                saveEdges(n, returnSiteN, d2, returnFacts, false);
+                for (D d3 : returnFacts) {
+                    EdgeFunction<V> edgeFnE = edgeFunctions.getCallToReturnEdgeFunction(n, d2, returnSiteN, d3);
+                    propagate(d1, returnSiteN, d3, f.composeWith(edgeFnE), n, false);
+                }
+            }
+        } else {
+            M p = icfg.getMethodOf(n);
+            for (N returnSiteN : returnSiteNs) {
+                FlowFunction<D> callToReturnFlowFunction = flowFunctions.getCallToReturnFlowFunction(n, returnSiteN);
+                flowFunctionConstructionCount++;
+                Set<D> returnFacts = computeCallToReturnFlowFunction(callToReturnFlowFunction, d1, d2);
+                // saveEdges(n, returnSiteN, d2, returnFacts, false);
+                // TODO: check effect save edges on construction time
+                for (D d3 : returnFacts) {
+                    SparseCFG<N, D> G_p_d3 = sparseCFGCache.getSparseCFG(p, d3);
+                    List<N> nextUses = G_p_d3.getNextUses(n);
+                    if (nextUses.size() > 1) {
+                        // propagate the d to the correct next stmt
+                        for (N d3_nextUse : nextUses) {
+                            if (d3_nextUse.equals(returnSiteN)) {
+                                EdgeFunction<V> edgeFnE = edgeFunctions.getCallToReturnEdgeFunction(n, d2, d3_nextUse, d3);
+                                propagate(d1, d3_nextUse, d3, f.composeWith(edgeFnE), n, false);
+                            }
+                        }
+                    } else {
+                        for (N d3_nextUse : nextUses) {
                             EdgeFunction<V> edgeFnE = edgeFunctions.getCallToReturnEdgeFunction(n, d2, d3_nextUse, d3);
                             propagate(d1, d3_nextUse, d3, f.composeWith(edgeFnE), n, false);
                         }
                     }
-                }else{
-                    for (N d3_nextUse : nextUses) {
-                        EdgeFunction<V> edgeFnE = edgeFunctions.getCallToReturnEdgeFunction(n, d2, d3_nextUse, d3);
-                        propagate(d1, d3_nextUse, d3, f.composeWith(edgeFnE), n, false);
-                    }
                 }
             }
         }
+
+
     }
 
     /**
