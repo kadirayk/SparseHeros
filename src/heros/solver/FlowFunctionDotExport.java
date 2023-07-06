@@ -36,7 +36,7 @@ import com.google.common.collect.Table.Cell;
  * @param <M> The type of objects used to represent methods. Typically {@link SootMethod}.
  * @param <I> The type of inter-procedural control-flow graph being used.
  */
-public class FlowFunctionDotExport<N,D,M,I extends InterproceduralCFG<N, M>> {
+public class FlowFunctionDotExport<N,D,M,I extends InterproceduralCFG<N, M>,X> {
 	private static class Numberer<D> {
 		long counter = 1;
 		Map<D, Long> map = new HashMap<D, Long>();
@@ -58,7 +58,7 @@ public class FlowFunctionDotExport<N,D,M,I extends InterproceduralCFG<N, M>> {
 			
 		}
 	}
-	private final IDESolver<N, D, M, ?, I> solver;
+	private final IDESolver<N, D, M, ?, I,X> solver;
 	private final ItemPrinter<? super N, ? super D, ? super M> printer;
 	private final Set<M> methodWhitelist;
 	
@@ -68,7 +68,7 @@ public class FlowFunctionDotExport<N,D,M,I extends InterproceduralCFG<N, M>> {
 	 * @param printer The printer object to use to create the string representations of
 	 * the nodes, facts, and methods in the exploded super-graph.
 	 */
-	public FlowFunctionDotExport(IDESolver<N, D, M, ?, I> solver, ItemPrinter<? super N, ? super D, ? super M> printer) {
+	public FlowFunctionDotExport(IDESolver<N, D, M, ?, I,X> solver, ItemPrinter<? super N, ? super D, ? super M> printer) {
 		this(solver, printer, null);
 	}
 	
@@ -81,7 +81,7 @@ public class FlowFunctionDotExport<N,D,M,I extends InterproceduralCFG<N, M>> {
 	 * Flow functions for which both unit endpoints are not contained in a method in methodWhitelist are not printed.
 	 * Callee/caller edges into/out of the methods in the set are still printed.  
 	 */
-	public FlowFunctionDotExport(IDESolver<N, D, M, ?, I> solver, ItemPrinter<? super N, ? super D, ? super M> printer, Set<M> methodWhitelist) {
+	public FlowFunctionDotExport(IDESolver<N, D, M, ?, I,X> solver, ItemPrinter<? super N, ? super D, ? super M> printer, Set<M> methodWhitelist) {
 		this.solver = solver;
 		this.printer = printer;
 		this.methodWhitelist = methodWhitelist;

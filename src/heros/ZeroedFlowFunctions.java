@@ -14,37 +14,37 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class ZeroedFlowFunctions<N, D, M> implements FlowFunctions<N, D, M> {
+public class ZeroedFlowFunctions<N, D, M,X> implements FlowFunctions<N, D, M,X> {
 
-	protected final FlowFunctions<N, D, M> delegate;
+	protected final FlowFunctions<N, D, M,X> delegate;
 	protected  final D zeroValue;
 
-	public ZeroedFlowFunctions(FlowFunctions<N, D, M> delegate, D zeroValue) {
+	public ZeroedFlowFunctions(FlowFunctions<N, D, M,X> delegate, D zeroValue) {
 		this.delegate = delegate;
 		this.zeroValue = zeroValue;
 	}
 
-	public FlowFunction<D> getNormalFlowFunction(N curr, N succ) {
+	public FlowFunction<D,X> getNormalFlowFunction(N curr, N succ) {
 		return new ZeroedFlowFunction(delegate.getNormalFlowFunction(curr, succ));
 	}
 
-	public FlowFunction<D> getCallFlowFunction(N callStmt, M destinationMethod) {
+	public FlowFunction<D,X> getCallFlowFunction(N callStmt, M destinationMethod) {
 		return new ZeroedFlowFunction(delegate.getCallFlowFunction(callStmt, destinationMethod));
 	}
 
-	public FlowFunction<D> getReturnFlowFunction(N callSite, M calleeMethod, N exitStmt, N returnSite) {
+	public FlowFunction<D,X> getReturnFlowFunction(N callSite, M calleeMethod, N exitStmt, N returnSite) {
 		return new ZeroedFlowFunction(delegate.getReturnFlowFunction(callSite, calleeMethod, exitStmt, returnSite));
 	}
 
-	public FlowFunction<D> getCallToReturnFlowFunction(N callSite, N returnSite) {
+	public FlowFunction<D,X> getCallToReturnFlowFunction(N callSite, N returnSite) {
 		return new ZeroedFlowFunction(delegate.getCallToReturnFlowFunction(callSite, returnSite));
 	}
 	
-	protected class ZeroedFlowFunction implements FlowFunction<D> {
+	protected class ZeroedFlowFunction implements FlowFunction<D,X> {
 
-		protected FlowFunction<D> del;
+		protected FlowFunction<D,X> del;
 
-		private ZeroedFlowFunction(FlowFunction<D> del) {
+		private ZeroedFlowFunction(FlowFunction<D,X> del) {
 			this.del = del;
 		}		
 		
@@ -58,7 +58,12 @@ public class ZeroedFlowFunctions<N, D, M> implements FlowFunctions<N, D, M> {
 				return del.computeTargets(source);
 			}
 		}
-		
+
+		@Override
+		public X getMeta() {
+			return null;
+		}
+
 	}
 	
 

@@ -26,7 +26,7 @@ package heros;
  * @param <V> The type of values to be computed along flow edges.
  * @param <I> The type of inter-procedural control-flow graph being used.
  */
-public interface IDETabulationProblem<N,D,M,V,I extends InterproceduralCFG<N,M>> extends IFDSTabulationProblem<N,D,M,I>{
+public interface IDETabulationProblem<N,D,M,V,I extends InterproceduralCFG<N,M>,X> extends IFDSTabulationProblem<N,D,M,I,X>{
 
 	/**
 	 * Returns the edge functions that describe how V-values are transformed along

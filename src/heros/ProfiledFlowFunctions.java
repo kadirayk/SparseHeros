@@ -13,43 +13,43 @@ package heros;
 /**
  * A wrapper that can be used to profile flow functions.
  */
-public class ProfiledFlowFunctions<N, D, M> implements FlowFunctions<N, D, M> {
+public class ProfiledFlowFunctions<N, D, M,X> implements FlowFunctions<N, D, M,X> {
 
-	protected final FlowFunctions<N, D, M> delegate;
+	protected final FlowFunctions<N, D, M,X> delegate;
 	
 	public long durationNormal, durationCall, durationReturn, durationCallReturn;
 
-	public ProfiledFlowFunctions(FlowFunctions<N, D, M> delegate) {
+	public ProfiledFlowFunctions(FlowFunctions<N, D, M,X> delegate) {
 		this.delegate = delegate;
 	}
 
-	public FlowFunction<D> getNormalFlowFunction(N curr, N succ) {
+	public FlowFunction<D,X> getNormalFlowFunction(N curr, N succ) {
 		long before = System.currentTimeMillis();
-		FlowFunction<D> ret = delegate.getNormalFlowFunction(curr, succ);
+		FlowFunction<D,X> ret = delegate.getNormalFlowFunction(curr, succ);
 		long duration = System.currentTimeMillis() - before;
 		durationNormal += duration;
 		return ret;
 	}
 
-	public FlowFunction<D> getCallFlowFunction(N callStmt, M destinationMethod) {
+	public FlowFunction<D,X> getCallFlowFunction(N callStmt, M destinationMethod) {
 		long before = System.currentTimeMillis();
-		FlowFunction<D> res = delegate.getCallFlowFunction(callStmt, destinationMethod);
+		FlowFunction<D,X> res = delegate.getCallFlowFunction(callStmt, destinationMethod);
 		long duration = System.currentTimeMillis() - before;
 		durationCall += duration;
 		return res;
 	}
 
-	public FlowFunction<D> getReturnFlowFunction(N callSite, M calleeMethod, N exitStmt, N returnSite) {
+	public FlowFunction<D,X> getReturnFlowFunction(N callSite, M calleeMethod, N exitStmt, N returnSite) {
 		long before = System.currentTimeMillis();
-		FlowFunction<D> res = delegate.getReturnFlowFunction(callSite, calleeMethod, exitStmt, returnSite);
+		FlowFunction<D,X> res = delegate.getReturnFlowFunction(callSite, calleeMethod, exitStmt, returnSite);
 		long duration = System.currentTimeMillis() - before;
 		durationReturn += duration;
 		return res;
 	}
 
-	public FlowFunction<D> getCallToReturnFlowFunction(N callSite, N returnSite) {
+	public FlowFunction<D,X> getCallToReturnFlowFunction(N callSite, N returnSite) {
 		long before = System.currentTimeMillis();
-		FlowFunction<D> res = delegate.getCallToReturnFlowFunction(callSite, returnSite);
+		FlowFunction<D,X> res = delegate.getCallToReturnFlowFunction(callSite, returnSite);
 		long duration = System.currentTimeMillis() - before;
 		durationCallReturn += duration;
 		return res;

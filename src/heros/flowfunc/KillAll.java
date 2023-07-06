@@ -23,7 +23,7 @@ import java.util.Set;
  *  
  * @param <D> The type of data-flow facts to be computed by the tabulation problem.
  */
-public class KillAll<D> implements FlowFunction<D> {
+public class KillAll<D,X> implements FlowFunction<D,X> {
 	
 	@SuppressWarnings("rawtypes")
 	private final static KillAll instance = new KillAll();
@@ -33,9 +33,14 @@ public class KillAll<D> implements FlowFunction<D> {
 	public Set<D> computeTargets(D source) {
 		return emptySet();
 	}
-	
+
+	@Override
+	public X getMeta() {
+		return null;
+	}
+
 	@SuppressWarnings("unchecked")
-	public static <D> KillAll<D> v() {
+	public static <D,X> KillAll<D,X> v() {
 		return instance;
 	}
 

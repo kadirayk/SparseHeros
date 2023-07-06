@@ -52,10 +52,10 @@ import com.google.common.collect.Maps;
  * @param <M> see {@link IFDSSolver}
  * @param <I> see {@link IFDSSolver}
  */
-public class BiDiIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>> {
+public class BiDiIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
 
-	private final IDETabulationProblem<N, AbstractionWithSourceStmt, M,V, I> forwardProblem;
-	private final IDETabulationProblem<N, AbstractionWithSourceStmt, M,V, I> backwardProblem;
+	private final IDETabulationProblem<N, AbstractionWithSourceStmt, M,V, I,X> forwardProblem;
+	private final IDETabulationProblem<N, AbstractionWithSourceStmt, M,V, I,X> backwardProblem;
 	private final CountingThreadPoolExecutor sharedExecutor;
 	protected SingleDirectionSolver fwSolver;
 	protected SingleDirectionSolver bwSolver;
@@ -63,7 +63,7 @@ public class BiDiIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>> {
 	/**
 	 * Instantiates a {@link BiDiIDESolver} with the associated forward and backward problem.
 	 */
-	public BiDiIDESolver(IDETabulationProblem<N,D,M,V,I> forwardProblem, IDETabulationProblem<N,D,M,V,I> backwardProblem) {
+	public BiDiIDESolver(IDETabulationProblem<N,D,M,V,I,X> forwardProblem, IDETabulationProblem<N,D,M,V,I,X> backwardProblem) {
 		if(!forwardProblem.followReturnsPastSeeds() || !backwardProblem.followReturnsPastSeeds()) {
 			throw new IllegalArgumentException("This solver is only meant for bottom-up problems, so followReturnsPastSeeds() should return true."); 
 		}
@@ -90,7 +90,7 @@ public class BiDiIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>> {
 	/**
 	 * Creates a solver to be used for each single analysis direction.
 	 */
-	protected SingleDirectionSolver createSingleDirectionSolver(IDETabulationProblem<N, AbstractionWithSourceStmt, M,V, I> problem, String debugName) {
+	protected SingleDirectionSolver createSingleDirectionSolver(IDETabulationProblem<N, AbstractionWithSourceStmt, M,V, I,X> problem, String debugName) {
 		return new SingleDirectionSolver(problem, debugName);
 	}
 	
@@ -161,14 +161,14 @@ public class BiDiIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>> {
 	/**
 	 * This is a modified IFDS solver that is capable of pausing and unpausing return-flow edges.
 	 */
-	protected class SingleDirectionSolver extends IDESolver<N,AbstractionWithSourceStmt,M,V,I> {
+	protected class SingleDirectionSolver extends IDESolver<N,AbstractionWithSourceStmt,M,V,I,X> {
 		private final String debugName;
 		private SingleDirectionSolver otherSolver;
 		private Set<LeakKey<N>> leakedSources = Collections.newSetFromMap(Maps.<LeakKey<N>, Boolean>newConcurrentMap());
 		private ConcurrentMap<LeakKey<N>,Set<PausedEdge>> pausedPathEdges =
 				Maps.newConcurrentMap();
 
-		public SingleDirectionSolver(IDETabulationProblem<N, AbstractionWithSourceStmt, M,V, I> ifdsProblem, String debugName) {
+		public SingleDirectionSolver(IDETabulationProblem<N, AbstractionWithSourceStmt, M,V, I,X> ifdsProblem, String debugName) {
 			super(ifdsProblem);
 			this.debugName = debugName;
 		}
@@ -327,35 +327,40 @@ public class BiDiIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>> {
 	/**
 	 * This tabulation problem simply propagates augmented abstractions where the normal problem would propagate normal abstractions.
 	 */
-	private class AugmentedTabulationProblem implements IDETabulationProblem<N, AbstractionWithSourceStmt,M,V,I> {
+	private class AugmentedTabulationProblem implements IDETabulationProblem<N, AbstractionWithSourceStmt,M,V,I,X> {
 
-		private final IDETabulationProblem<N,D,M,V,I> delegate;
+		private final IDETabulationProblem<N,D,M,V,I,X> delegate;
 		private final AbstractionWithSourceStmt ZERO;
-		private final FlowFunctions<N, D, M> originalFunctions;
+		private final FlowFunctions<N, D, M,X> originalFunctions;
 		
-		public AugmentedTabulationProblem(IDETabulationProblem<N, D, M,V, I> delegate) {
+		public AugmentedTabulationProblem(IDETabulationProblem<N, D, M,V, I,X> delegate) {
 			this.delegate = delegate;
 			originalFunctions = this.delegate.flowFunctions();
 			ZERO = new AbstractionWithSourceStmt(delegate.zeroValue(), null);
 		}
 
 		@Override
-		public FlowFunctions<N, AbstractionWithSourceStmt, M> flowFunctions() {
-			return new FlowFunctions<N, AbstractionWithSourceStmt, M>() {
+		public FlowFunctions<N, AbstractionWithSourceStmt, M,X> flowFunctions() {
+			return new FlowFunctions<N, AbstractionWithSourceStmt, M,X>() {
 
 				@Override
-				public FlowFunction<AbstractionWithSourceStmt> getNormalFlowFunction(final N curr, final N succ) {
-					return new FlowFunction<AbstractionWithSourceStmt>() {
+				public FlowFunction<AbstractionWithSourceStmt,X> getNormalFlowFunction(final N curr, final N succ) {
+					return new FlowFunction<AbstractionWithSourceStmt,X>() {
 						@Override
 						public Set<AbstractionWithSourceStmt> computeTargets(AbstractionWithSourceStmt source) {
 							return copyOverSourceStmts(source, originalFunctions.getNormalFlowFunction(curr, succ));
+						}
+
+						@Override
+						public X getMeta() {
+							return null;
 						}
 					};
 				}
 
 				@Override
-				public FlowFunction<AbstractionWithSourceStmt> getCallFlowFunction(final N callStmt, final M destinationMethod) {
-					return new FlowFunction<AbstractionWithSourceStmt>() {
+				public FlowFunction<AbstractionWithSourceStmt,X> getCallFlowFunction(final N callStmt, final M destinationMethod) {
+					return new FlowFunction<AbstractionWithSourceStmt,X>() {
 						@Override
 						public Set<AbstractionWithSourceStmt> computeTargets(AbstractionWithSourceStmt source) {
 							Set<D> origTargets = originalFunctions.getCallFlowFunction(callStmt, destinationMethod).computeTargets(
@@ -367,30 +372,45 @@ public class BiDiIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>> {
 							}
 							return res;
 						}
+
+						@Override
+						public X getMeta() {
+							return null;
+						}
 					};
 				}
 
 				@Override
-				public FlowFunction<AbstractionWithSourceStmt> getReturnFlowFunction(final N callSite, final M calleeMethod, final N exitStmt, final N returnSite) {
-					return new FlowFunction<AbstractionWithSourceStmt>() {
+				public FlowFunction<AbstractionWithSourceStmt,X> getReturnFlowFunction(final N callSite, final M calleeMethod, final N exitStmt, final N returnSite) {
+					return new FlowFunction<AbstractionWithSourceStmt,X>() {
 						@Override
 						public Set<AbstractionWithSourceStmt> computeTargets(AbstractionWithSourceStmt source) {
 							return copyOverSourceStmts(source, originalFunctions.getReturnFlowFunction(callSite, calleeMethod, exitStmt, returnSite));
 						}
+
+						@Override
+						public X getMeta() {
+							return null;
+						}
 					};
 				}
 
 				@Override
-				public FlowFunction<AbstractionWithSourceStmt> getCallToReturnFlowFunction(final N callSite, final N returnSite) {
-					return new FlowFunction<AbstractionWithSourceStmt>() {
+				public FlowFunction<AbstractionWithSourceStmt,X> getCallToReturnFlowFunction(final N callSite, final N returnSite) {
+					return new FlowFunction<AbstractionWithSourceStmt,X>() {
 						@Override
 						public Set<AbstractionWithSourceStmt> computeTargets(AbstractionWithSourceStmt source) {
 							return copyOverSourceStmts(source, originalFunctions.getCallToReturnFlowFunction(callSite, returnSite));
 						}
+
+						@Override
+						public X getMeta() {
+							return null;
+						}
 					};
 				}
 				
-				private Set<AbstractionWithSourceStmt> copyOverSourceStmts(AbstractionWithSourceStmt source, FlowFunction<D> originalFunction) {
+				private Set<AbstractionWithSourceStmt> copyOverSourceStmts(AbstractionWithSourceStmt source, FlowFunction<D,X> originalFunction) {
 					D originalAbstraction = source.getAbstraction();
 					Set<D> origTargets = originalFunction.computeTargets(originalAbstraction);
 					

@@ -17,7 +17,7 @@ import java.util.Set;
 
 
 
-public class Identity<D> implements FlowFunction<D> {
+public class Identity<D,X> implements FlowFunction<D,X> {
 	
 	@SuppressWarnings("rawtypes")
 	private final static Identity instance = new Identity();
@@ -28,8 +28,13 @@ public class Identity<D> implements FlowFunction<D> {
 		return singleton(source);
 	}
 
+	@Override
+	public X getMeta() {
+		return null;
+	}
+
 	@SuppressWarnings("unchecked")
-	public static <D> Identity<D> v() {
+	public static <D,X> Identity<D,X> v() {
 		return instance;
 	}
 

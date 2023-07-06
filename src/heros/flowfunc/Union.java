@@ -21,26 +21,31 @@ import java.util.Set;
 /**
  * Represents the union of a set of flow functions.
  */
-public class Union<D> implements FlowFunction<D> {
+public class Union<D,X> implements FlowFunction<D,X> {
 	
-	private final FlowFunction<D>[] funcs;
+	private final FlowFunction<D,X>[] funcs;
 
-	private Union(FlowFunction<D>... funcs){
+	private Union(FlowFunction<D,X>... funcs){
 		this.funcs = funcs;
 	} 
 
 	public Set<D> computeTargets(D source) {
 		Set<D> res = newHashSet();
-		for (FlowFunction<D> func : funcs) {
+		for (FlowFunction<D,X> func : funcs) {
 			res.addAll(func.computeTargets(source));
 		}
 		return res;
 	}
 
+	@Override
+	public X getMeta() {
+		return null;
+	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static <D> FlowFunction<D> union(FlowFunction<D>... funcs) {
-		List<FlowFunction<D>> list = new ArrayList<FlowFunction<D>>();
-		for (FlowFunction<D> f : funcs) {
+	public static <D,X> FlowFunction<D,X> union(FlowFunction<D,X>... funcs) {
+		List<FlowFunction<D,X>> list = new ArrayList<FlowFunction<D,X>>();
+		for (FlowFunction<D,X> f : funcs) {
 			if(f!=Identity.v()) {
 				list.add(f);
 			}

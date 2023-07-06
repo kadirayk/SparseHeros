@@ -22,18 +22,18 @@ import com.google.common.collect.Sets;
 /**
  * Represents the ordered composition of a set of flow functions.
  */
-public class Compose<D> implements FlowFunction<D> {
+public class Compose<D,X> implements FlowFunction<D,X> {
 	
-	private final FlowFunction<D>[] funcs;
+	private final FlowFunction<D,X>[] funcs;
 
-	private Compose(FlowFunction<D>... funcs){
+	private Compose(FlowFunction<D,X>... funcs){
 		this.funcs = funcs;
 	} 
 
 	public Set<D> computeTargets(D source) {
 		Set<D> curr = Sets.newHashSet();
 		curr.add(source);
-		for (FlowFunction<D> func : funcs) {
+		for (FlowFunction<D,X> func : funcs) {
 			Set<D> next = Sets.newHashSet();
 			for(D d: curr)
 				next.addAll(func.computeTargets(d));
@@ -42,10 +42,15 @@ public class Compose<D> implements FlowFunction<D> {
 		return curr;
 	}
 
+	@Override
+	public X getMeta() {
+		return null;
+	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static <D> FlowFunction<D> compose(FlowFunction<D>... funcs) {
-		List<FlowFunction<D>> list = new ArrayList<FlowFunction<D>>();
-		for (FlowFunction<D> f : funcs) {
+	public static <D,X> FlowFunction<D,X> compose(FlowFunction<D,X>... funcs) {
+		List<FlowFunction<D,X>> list = new ArrayList<FlowFunction<D,X>>();
+		for (FlowFunction<D,X> f : funcs) {
 			if(f!=Identity.v()) {
 				list.add(f);
 			}

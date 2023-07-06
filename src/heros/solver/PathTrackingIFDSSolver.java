@@ -28,9 +28,9 @@ import com.google.common.collect.Maps;
  * @deprecated Use {@link JoinHandlingNodesIFDSSolver} instead.
  */
 @Deprecated
-public class PathTrackingIFDSSolver<N, D extends LinkedNode<D>, M, I extends InterproceduralCFG<N, M>> extends IFDSSolver<N, D, M, I> {
+public class PathTrackingIFDSSolver<N, D extends LinkedNode<D>, M, I extends InterproceduralCFG<N, M>,X> extends IFDSSolver<N, D, M, I,X> {
 
-	public PathTrackingIFDSSolver(IFDSTabulationProblem<N, D, M, I> ifdsProblem) {
+	public PathTrackingIFDSSolver(IFDSTabulationProblem<N, D, M, I,X> ifdsProblem) {
 		super(ifdsProblem);
 	}
 

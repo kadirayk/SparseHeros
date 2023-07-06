@@ -26,7 +26,7 @@ import java.util.Set;
  * @param <M> The type of objects used to represent methods. Typically {@link SootMethod}.
  * @param <I> The type of inter-procedural control-flow graph being used.
  */
-public interface IFDSTabulationProblem<N,D,M, I extends InterproceduralCFG<N,M>> extends SolverConfiguration {
+public interface IFDSTabulationProblem<N,D,M, I extends InterproceduralCFG<N,M>,X> extends SolverConfiguration {
 
 	/**
 	 * Returns a set of flow functions. Those functions are used to compute data-flow facts
@@ -35,7 +35,7 @@ public interface IFDSTabulationProblem<N,D,M, I extends InterproceduralCFG<N,M>>
 	 * <b>NOTE:</b> this method could be called many times. Implementations of this
 	 * interface should therefore cache the return value! 
 	 */
-	FlowFunctions<N,D,M> flowFunctions();
+	FlowFunctions<N,D,M,X> flowFunctions();
 	
 	/**
 	 * Returns the interprocedural control-flow graph which this problem is computed over.

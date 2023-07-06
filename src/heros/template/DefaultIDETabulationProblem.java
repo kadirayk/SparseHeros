@@ -27,8 +27,8 @@ import heros.MeetLattice;
  * @param <V> The type of values to be computed along flow edges.
  * @param <I> The type of inter-procedural control-flow graph being used.
  */
-public abstract class DefaultIDETabulationProblem<N,D,M,V,I extends InterproceduralCFG<N,M>>
-    extends DefaultIFDSTabulationProblem<N,D,M,I> implements IDETabulationProblem<N,D,M,V,I>{
+public abstract class DefaultIDETabulationProblem<N,D,M,V,I extends InterproceduralCFG<N,M>,X>
+    extends DefaultIFDSTabulationProblem<N,D,M,I,X> implements IDETabulationProblem<N,D,M,V,I,X>{
 
 	private final EdgeFunction<V> allTopFunction;
 	private final MeetLattice<V> joinLattice;

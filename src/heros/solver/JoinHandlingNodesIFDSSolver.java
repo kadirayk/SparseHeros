@@ -27,9 +27,9 @@ import com.google.common.collect.Maps;
  *  
  * @author Johannes Lerch
  */
-public class JoinHandlingNodesIFDSSolver<N, D extends JoinHandlingNode<D>, M, I extends InterproceduralCFG<N, M>> extends IFDSSolver<N, D, M, I> {
+public class JoinHandlingNodesIFDSSolver<N, D extends JoinHandlingNode<D>, M, I extends InterproceduralCFG<N, M>,X> extends IFDSSolver<N, D, M, I,X> {
 
-	public JoinHandlingNodesIFDSSolver(IFDSTabulationProblem<N, D, M, I> ifdsProblem) {
+	public JoinHandlingNodesIFDSSolver(IFDSTabulationProblem<N, D, M, I,X> ifdsProblem) {
 		super(ifdsProblem);
 	}
 

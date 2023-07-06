@@ -23,24 +23,24 @@ import heros.InterproceduralCFG;
  * 
  * @param <D> The type of data-flow facts to be computed by the tabulation problem.
  */
-public abstract class DefaultIFDSTabulationProblem<N,D,M, I extends InterproceduralCFG<N,M>> implements IFDSTabulationProblem<N,D,M,I> {
+public abstract class DefaultIFDSTabulationProblem<N,D,M, I extends InterproceduralCFG<N,M>,X> implements IFDSTabulationProblem<N,D,M,I,X> {
 
 	private final I icfg;
-	private FlowFunctions<N,D,M> flowFunctions;
+	private FlowFunctions<N,D,M,X> flowFunctions;
 	private D zeroValue;
 	
 	public DefaultIFDSTabulationProblem(I icfg) {
 		this.icfg = icfg;
 	}
 	
-	protected abstract FlowFunctions<N, D, M> createFlowFunctionsFactory();
+	protected abstract FlowFunctions<N, D, M,X> createFlowFunctionsFactory();
 	
 	/** A factory method to create and return the ZERO value. Meant to be overwritten by subclasses.
 	    Clients should call zeroValue() instead to access the singleton zero value. */
 	protected abstract D createZeroValue();
 
 	@Override
-	public final FlowFunctions<N,D,M> flowFunctions() {
+	public final FlowFunctions<N,D,M,X> flowFunctions() {
 		if(flowFunctions==null) {
 			flowFunctions = createFlowFunctionsFactory();
 		}

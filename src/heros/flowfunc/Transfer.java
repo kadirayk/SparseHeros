@@ -18,7 +18,7 @@ import java.util.Set;
 
 
 
-public class Transfer<D> implements FlowFunction<D> {
+public class Transfer<D,X> implements FlowFunction<D,X> {
 	
 	private final D toValue;
 	private final D fromValue;
@@ -37,5 +37,10 @@ public class Transfer<D> implements FlowFunction<D> {
 			return Collections.singleton(source);
 		}
 	}
-	
+
+	@Override
+	public X getMeta() {
+		return null;
+	}
+
 }

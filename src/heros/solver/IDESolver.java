@@ -65,7 +65,7 @@ import com.google.common.collect.Table.Cell;
  * @param <V> The type of values to be computed along flow edges.
  * @param <I> The type of inter-procedural control-flow graph being used.
  */
-public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
+public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>,X> {
 	
 	public static CacheBuilder<Object, Object> DEFAULT_CACHE_BUILDER = CacheBuilder.newBuilder().concurrencyLevel(Runtime.getRuntime().availableProcessors()).initialCapacity(10000).softValues();
 	
@@ -107,7 +107,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 	protected final Set<N> unbalancedRetSites;
 
 	@DontSynchronize("stateless")
-	protected final FlowFunctions<N, D, M> flowFunctions;
+	protected final FlowFunctions<N, D, M,X> flowFunctions;
 
 	@DontSynchronize("stateless")
 	protected final EdgeFunctions<N,D,M,V> edgeFunctions;
@@ -143,7 +143,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 	protected final D zeroValue;
 	
 	@DontSynchronize("readOnly")
-	protected final FlowFunctionCache<N,D,M> ffCache; 
+	protected final FlowFunctionCache<N,D,M,X> ffCache;
 
 	@DontSynchronize("readOnly")
 	protected final EdgeFunctionCache<N,D,M,V> efCache;
@@ -160,7 +160,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 	 * Creates a solver for the given problem, which caches flow functions and edge functions.
 	 * The solver must then be started by calling {@link #solve()}.
 	 */
-	public IDESolver(IDETabulationProblem<N,D,M,V,I> tabulationProblem) {
+	public IDESolver(IDETabulationProblem<N,D,M,V,I,X> tabulationProblem) {
 		this(tabulationProblem, DEFAULT_CACHE_BUILDER, DEFAULT_CACHE_BUILDER);
 	}
 
@@ -170,7 +170,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 	 * @param flowFunctionCacheBuilder A valid {@link CacheBuilder} or <code>null</code> if no caching is to be used for flow functions.
 	 * @param edgeFunctionCacheBuilder A valid {@link CacheBuilder} or <code>null</code> if no caching is to be used for edge functions.
 	 */
-	public IDESolver(IDETabulationProblem<N,D,M,V,I> tabulationProblem, @SuppressWarnings("rawtypes") CacheBuilder flowFunctionCacheBuilder, @SuppressWarnings("rawtypes") CacheBuilder edgeFunctionCacheBuilder) {
+	public IDESolver(IDETabulationProblem<N,D,M,V,I,X> tabulationProblem, @SuppressWarnings("rawtypes") CacheBuilder flowFunctionCacheBuilder, @SuppressWarnings("rawtypes") CacheBuilder edgeFunctionCacheBuilder) {
 		if(logger.isDebugEnabled()) {
 			if(flowFunctionCacheBuilder != null)
 				flowFunctionCacheBuilder = flowFunctionCacheBuilder.recordStats();
@@ -179,11 +179,11 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 		}
 		this.zeroValue = tabulationProblem.zeroValue();
 		this.icfg = tabulationProblem.interproceduralCFG();		
-		FlowFunctions<N, D, M> flowFunctions = tabulationProblem.autoAddZero() ?
-				new ZeroedFlowFunctions<N,D,M>(tabulationProblem.flowFunctions(), tabulationProblem.zeroValue()) : tabulationProblem.flowFunctions(); 
+		FlowFunctions<N, D, M,X> flowFunctions = tabulationProblem.autoAddZero() ?
+				new ZeroedFlowFunctions<N,D,M,X>(tabulationProblem.flowFunctions(), tabulationProblem.zeroValue()) : tabulationProblem.flowFunctions();
 		EdgeFunctions<N, D, M, V> edgeFunctions = tabulationProblem.edgeFunctions();
 		if(flowFunctionCacheBuilder!=null) {
-			ffCache = new FlowFunctionCache<N,D,M>(flowFunctions, flowFunctionCacheBuilder);
+			ffCache = new FlowFunctionCache<N,D,M,X>(flowFunctions, flowFunctionCacheBuilder);
 			flowFunctions = ffCache;
 		} else {
 			ffCache = null;
@@ -349,7 +349,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 		for(M sCalledProcN: callees) { //still line 14
 			
 			//compute the call-flow function
-			FlowFunction<D> function = flowFunctions.getCallFlowFunction(n, sCalledProcN);
+			FlowFunction<D,X> function = flowFunctions.getCallFlowFunction(n, sCalledProcN);
 			flowFunctionConstructionCount++;
 			Set<D> res = computeCallFlowFunction(function, d1, d2);
 			//for each callee's start point(s)
@@ -381,7 +381,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 						//for each return site
 						for(N retSiteN: returnSiteNs) {
 							//compute return-flow function
-							FlowFunction<D> retFunction = flowFunctions.getReturnFlowFunction(n, sCalledProcN, eP, retSiteN);
+							FlowFunction<D,X> retFunction = flowFunctions.getReturnFlowFunction(n, sCalledProcN, eP, retSiteN);
 							flowFunctionConstructionCount++;
 							Set<D> returnedFacts = computeReturnFlowFunction(retFunction, d3, d4, n, Collections.singleton(d2));
 							saveEdges(eP, retSiteN, d4, returnedFacts, true);
@@ -402,7 +402,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 		//line 17-19 of Naeem/Lhotak/Rodriguez		
 		//process intra-procedural flows along call-to-return flow functions
 		for (N returnSiteN : returnSiteNs) {
-			FlowFunction<D> callToReturnFlowFunction = flowFunctions.getCallToReturnFlowFunction(n, returnSiteN);
+			FlowFunction<D,X> callToReturnFlowFunction = flowFunctions.getCallToReturnFlowFunction(n, returnSiteN);
 			flowFunctionConstructionCount++;
 			Set<D> returnFacts = computeCallToReturnFlowFunction(callToReturnFlowFunction, d1, d2);
 			saveEdges(n, returnSiteN, d2, returnFacts, false);
@@ -421,7 +421,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 	 * @return The set of caller-side abstractions at the callee's start node
 	 */
 	protected Set<D> computeCallFlowFunction
-			(FlowFunction<D> callFlowFunction, D d1, D d2) {
+			(FlowFunction<D,X> callFlowFunction, D d1, D d2) {
 		return callFlowFunction.computeTargets(d2);
 	}
 
@@ -435,7 +435,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 	 * @return The set of caller-side abstractions at the return site
 	 */
 	protected Set<D> computeCallToReturnFlowFunction
-			(FlowFunction<D> callToReturnFlowFunction, D d1, D d2) {
+			(FlowFunction<D,X> callToReturnFlowFunction, D d1, D d2) {
 		return callToReturnFlowFunction.computeTargets(d2);
 	}
 	
@@ -479,7 +479,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 			//for each return site
 			for(N retSiteC: icfg.getReturnSitesOfCallAt(c)) {
 				//compute return-flow function
-				FlowFunction<D> retFunction = flowFunctions.getReturnFlowFunction(c, methodThatNeedsSummary,n,retSiteC);
+				FlowFunction<D,X> retFunction = flowFunctions.getReturnFlowFunction(c, methodThatNeedsSummary,n,retSiteC);
 				flowFunctionConstructionCount++;
 				//for each incoming-call value
 				for(D d4: entry.getValue()) {
@@ -516,7 +516,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 				Collection<N> callers = icfg.getCallersOf(methodThatNeedsSummary);
 				for(N c: callers) {
 					for(N retSiteC: icfg.getReturnSitesOfCallAt(c)) {
-						FlowFunction<D> retFunction = flowFunctions.getReturnFlowFunction(c, methodThatNeedsSummary,n,retSiteC);
+						FlowFunction<D,X> retFunction = flowFunctions.getReturnFlowFunction(c, methodThatNeedsSummary,n,retSiteC);
 						flowFunctionConstructionCount++;
 						Set<D> targets = computeReturnFlowFunction(retFunction, d1, d2, c, Collections.singleton(zeroValue));
 						saveEdges(n, retSiteC, d2, targets, true);
@@ -532,7 +532,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 				//this might be undesirable if the flow function has a side effect such as registering a taint;
 				//instead we thus call the return flow function will a null caller
 				if(callers.isEmpty()) {
-					FlowFunction<D> retFunction = flowFunctions.getReturnFlowFunction(null, methodThatNeedsSummary,n,null);
+					FlowFunction<D,X> retFunction = flowFunctions.getReturnFlowFunction(null, methodThatNeedsSummary,n,null);
 					flowFunctionConstructionCount++;
 					retFunction.computeTargets(d2);
 				}
@@ -578,7 +578,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 	 * @return The set of caller-side abstractions at the return site
 	 */
 	protected Set<D> computeReturnFlowFunction
-			(FlowFunction<D> retFunction, D d1, D d2, N callSite, Set<D> callerSideDs) {
+			(FlowFunction<D,X> retFunction, D d1, D d2, N callSite, Set<D> callerSideDs) {
 		return retFunction.computeTargets(d2);
 	}
 
@@ -594,7 +594,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 		
 		EdgeFunction<V> f = jumpFunction(edge);
 		for (N m : icfg.getSuccsOf(n)) {
-			FlowFunction<D> flowFunction = flowFunctions.getNormalFlowFunction(n,m);
+			FlowFunction<D,X> flowFunction = flowFunctions.getNormalFlowFunction(n,m);
 			flowFunctionConstructionCount++;
 			Set<D> res = computeNormalFlowFunction(flowFunction, d1, d2);
 			saveEdges(n, m, d2, res, false);
@@ -614,7 +614,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 	 * @return The set of abstractions at the successor node
 	 */
 	protected Set<D> computeNormalFlowFunction
-			(FlowFunction<D> flowFunction, D d1, D d2) {
+			(FlowFunction<D,X> flowFunction, D d1, D d2) {
 		return flowFunction.computeTargets(d2);
 	}
 
@@ -733,7 +733,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>> {
 	private void propagateValueAtCall(Pair<N, D> nAndD, N n) {
 		D d = nAndD.getO2();
 		for(M q: icfg.getCalleesOfCallAt(n)) {
-			FlowFunction<D> callFlowFunction = flowFunctions.getCallFlowFunction(n, q);
+			FlowFunction<D,X> callFlowFunction = flowFunctions.getCallFlowFunction(n, q);
 			flowFunctionConstructionCount++;
 			for(D dPrime: callFlowFunction.computeTargets(d)) {
 				EdgeFunction<V> edgeFn = edgeFunctions.getCallEdgeFunction(n, d, q, dPrime);

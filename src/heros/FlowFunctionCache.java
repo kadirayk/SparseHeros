@@ -16,62 +16,62 @@ import com.google.common.cache.LoadingCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FlowFunctionCache<N, D, M> implements FlowFunctions<N, D, M> {
+public class FlowFunctionCache<N, D, M,X> implements FlowFunctions<N, D, M,X> {
 	
-	protected final FlowFunctions<N, D, M> delegate;
+	protected final FlowFunctions<N, D, M,X> delegate;
 	
-	protected final LoadingCache<NNKey, FlowFunction<D>> normalCache;
+	protected final LoadingCache<NNKey, FlowFunction<D,X>> normalCache;
 	
-	protected final LoadingCache<CallKey, FlowFunction<D>> callCache;
+	protected final LoadingCache<CallKey, FlowFunction<D,X>> callCache;
 
-	protected final LoadingCache<ReturnKey, FlowFunction<D>> returnCache;
+	protected final LoadingCache<ReturnKey, FlowFunction<D,X>> returnCache;
 
-	protected final LoadingCache<NNKey, FlowFunction<D>> callToReturnCache;
+	protected final LoadingCache<NNKey, FlowFunction<D,X>> callToReturnCache;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	@SuppressWarnings("unchecked")
-	public FlowFunctionCache(final FlowFunctions<N, D, M> delegate, @SuppressWarnings("rawtypes") CacheBuilder builder) {
+	public FlowFunctionCache(final FlowFunctions<N, D, M,X> delegate, @SuppressWarnings("rawtypes") CacheBuilder builder) {
 		this.delegate = delegate;
 		
-		normalCache = builder.build(new CacheLoader<NNKey, FlowFunction<D>>() {
-			public FlowFunction<D> load(NNKey key) throws Exception {
+		normalCache = builder.build(new CacheLoader<NNKey, FlowFunction<D,X>>() {
+			public FlowFunction<D,X> load(NNKey key) throws Exception {
 				return delegate.getNormalFlowFunction(key.getCurr(), key.getSucc());
 			}
 		});
 		
-		callCache = builder.build(new CacheLoader<CallKey, FlowFunction<D>>() {
-			public FlowFunction<D> load(CallKey key) throws Exception {
+		callCache = builder.build(new CacheLoader<CallKey, FlowFunction<D,X>>() {
+			public FlowFunction<D,X> load(CallKey key) throws Exception {
 				return delegate.getCallFlowFunction(key.getCallStmt(), key.getDestinationMethod());
 			}
 		});
 		
-		returnCache = builder.build(new CacheLoader<ReturnKey, FlowFunction<D>>() {
-			public FlowFunction<D> load(ReturnKey key) throws Exception {
+		returnCache = builder.build(new CacheLoader<ReturnKey, FlowFunction<D,X>>() {
+			public FlowFunction<D,X> load(ReturnKey key) throws Exception {
 				return delegate.getReturnFlowFunction(key.getCallStmt(), key.getDestinationMethod(), key.getExitStmt(), key.getReturnSite());
 			}
 		});
 		
-		callToReturnCache = builder.build(new CacheLoader<NNKey, FlowFunction<D>>() {
-			public FlowFunction<D> load(NNKey key) throws Exception {
+		callToReturnCache = builder.build(new CacheLoader<NNKey, FlowFunction<D,X>>() {
+			public FlowFunction<D,X> load(NNKey key) throws Exception {
 				return delegate.getCallToReturnFlowFunction(key.getCurr(), key.getSucc());
 			}
 		});
 	}
 	
-	public FlowFunction<D> getNormalFlowFunction(N curr, N succ) {
+	public FlowFunction<D,X> getNormalFlowFunction(N curr, N succ) {
 		return normalCache.getUnchecked(new NNKey(curr, succ));
 	}
 	
-	public FlowFunction<D> getCallFlowFunction(N callStmt, M destinationMethod) {
+	public FlowFunction<D,X> getCallFlowFunction(N callStmt, M destinationMethod) {
 		return callCache.getUnchecked(new CallKey(callStmt, destinationMethod));
 	}
 
-	public FlowFunction<D> getReturnFlowFunction(N callSite, M calleeMethod, N exitStmt, N returnSite) {
+	public FlowFunction<D,X> getReturnFlowFunction(N callSite, M calleeMethod, N exitStmt, N returnSite) {
 		return returnCache.getUnchecked(new ReturnKey(callSite, calleeMethod, exitStmt, returnSite));
 	}
 
-	public FlowFunction<D> getCallToReturnFlowFunction(N callSite, N returnSite) {
+	public FlowFunction<D,X> getCallToReturnFlowFunction(N callSite, N returnSite) {
 		return callToReturnCache.getUnchecked(new NNKey(callSite, returnSite));
 	}
 	

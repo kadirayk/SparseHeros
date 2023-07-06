@@ -49,13 +49,13 @@ import com.google.common.collect.Maps;
  * @param <M> see {@link IFDSSolver}
  * @param <I> see {@link IFDSSolver}
  */
-public class BiDiIFDSSolver<N, D extends JoinHandlingNode<D>, M, I extends InterproceduralCFG<N, M>> extends BiDiIDESolver<N, D, M, BinaryDomain, I> {
+public class BiDiIFDSSolver<N, D extends JoinHandlingNode<D>, M, I extends InterproceduralCFG<N, M>,X> extends BiDiIDESolver<N, D, M, BinaryDomain, I,X> {
 
 
 	/**
 	 * Instantiates a {@link BiDiIFDSSolver} with the associated forward and backward problem.
 	 */
-	public BiDiIFDSSolver(IFDSTabulationProblem<N,D,M,I> forwardProblem, IFDSTabulationProblem<N,D,M,I> backwardProblem) {
+	public BiDiIFDSSolver(IFDSTabulationProblem<N,D,M,I,X> forwardProblem, IFDSTabulationProblem<N,D,M,I,X> backwardProblem) {
 		super(IFDSSolver.createIDETabulationProblem(forwardProblem), IFDSSolver.createIDETabulationProblem(backwardProblem));
 	}
 	

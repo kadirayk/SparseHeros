@@ -333,11 +333,11 @@ public class TestHelper {
 			return a.equals(b);
 	}
 
-	public FlowFunctions<Statement, JoinableFact, TestMethod> flowFunctions() {
-		return new FlowFunctions<Statement, JoinableFact, TestMethod>() {
+	public FlowFunctions<Statement, JoinableFact, TestMethod, DummyMeta> flowFunctions() {
+		return new FlowFunctions<Statement, JoinableFact, TestMethod, DummyMeta>() {
 
 			@Override
-			public FlowFunction<JoinableFact> getReturnFlowFunction(Statement callSite, TestMethod calleeMethod, Statement exitStmt, Statement returnSite) {
+			public FlowFunction<JoinableFact, DummyMeta> getReturnFlowFunction(Statement callSite, TestMethod calleeMethod, Statement exitStmt, Statement returnSite) {
 				for (final ReturnEdge edge : returnEdges) {
 					if (nullAwareEquals(callSite, edge.callSite) && edge.calleeMethod.equals(calleeMethod)
 							&& edge.exitStmt.equals(exitStmt) && nullAwareEquals(edge.returnSite, returnSite)) {
@@ -349,7 +349,7 @@ public class TestHelper {
 			}
 
 			@Override
-			public FlowFunction<JoinableFact> getNormalFlowFunction(final Statement curr, final Statement succ) {
+			public FlowFunction<JoinableFact, DummyMeta> getNormalFlowFunction(final Statement curr, final Statement succ) {
 				for (final NormalEdge edge : normalEdges) {
 					if (edge.unit.equals(curr) && edge.succUnit.equals(succ)) {
 						return createFlowFunction(edge);
@@ -359,7 +359,7 @@ public class TestHelper {
 			}
 
 			@Override
-			public FlowFunction<JoinableFact> getCallToReturnFlowFunction(Statement callSite, Statement returnSite) {
+			public FlowFunction<JoinableFact, DummyMeta> getCallToReturnFlowFunction(Statement callSite, Statement returnSite) {
 				for (final Call2ReturnEdge edge : call2retEdges) {
 					if (edge.callSite.equals(callSite) && edge.returnSite.equals(returnSite)) {
 						return createFlowFunction(edge);
@@ -369,7 +369,7 @@ public class TestHelper {
 			}
 
 			@Override
-			public FlowFunction<JoinableFact> getCallFlowFunction(Statement callStmt, TestMethod destinationMethod) {
+			public FlowFunction<JoinableFact, DummyMeta> getCallFlowFunction(Statement callStmt, TestMethod destinationMethod) {
 				for (final CallEdge edge : callEdges) {
 					if (edge.callSite.equals(callStmt) && edge.destinationMethod.equals(destinationMethod)) {
 						return createFlowFunction(edge);
@@ -378,8 +378,8 @@ public class TestHelper {
 				throw new AssertionError(String.format("No Flow Function expected for call %s -> %s", callStmt, destinationMethod));
 			}
 
-			private FlowFunction<JoinableFact> createFlowFunction(final Edge edge) {
-				return new FlowFunction<JoinableFact>() {
+			private FlowFunction<JoinableFact, DummyMeta> createFlowFunction(final Edge edge) {
+				return new FlowFunction<JoinableFact, DummyMeta>() {
 					@Override
 					public Set<JoinableFact> computeTargets(JoinableFact source) {
 						for (ExpectedFlowFunction<JoinableFact> ff : edge.flowFunctions) {
@@ -393,14 +393,19 @@ public class TestHelper {
 						}
 						throw new AssertionError(String.format("Fact '%s' was not expected at edge '%s'", source, edge));
 					}
+
+					@Override
+					public DummyMeta getMeta() {
+						return null;
+					}
 				};
 			}
 		};
 	}
 
 	public void runSolver(final boolean followReturnsPastSeeds, final String...initialSeeds) {
-		IFDSSolver<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>> solver =
-				new IFDSSolver<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>>(
+		IFDSSolver<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>, DummyMeta> solver =
+				new IFDSSolver<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>, DummyMeta>(
 				createTabulationProblem(followReturnsPastSeeds, initialSeeds));
 
 		solver.solve();
@@ -410,11 +415,11 @@ public class TestHelper {
 	
 	public static enum TabulationProblemExchange {AsSpecified, ExchangeForwardAndBackward};
 	public void runBiDiSolver(TestHelper backwardHelper, TabulationProblemExchange direction, final String...initialSeeds) {
-		BiDiIFDSSolver<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>> solver =
+		BiDiIFDSSolver<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>, DummyMeta> solver =
 				direction == TabulationProblemExchange.AsSpecified ? 
-				new BiDiIFDSSolver<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>>(createTabulationProblem(true, initialSeeds), 
+				new BiDiIFDSSolver<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>, DummyMeta>(createTabulationProblem(true, initialSeeds),
 									backwardHelper.createTabulationProblem(true, initialSeeds)) :
-				new BiDiIFDSSolver<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>>(backwardHelper.createTabulationProblem(true, initialSeeds), 
+				new BiDiIFDSSolver<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>, DummyMeta>(backwardHelper.createTabulationProblem(true, initialSeeds),
 									createTabulationProblem(true, initialSeeds));
 		
 		solver.solve();
@@ -422,11 +427,11 @@ public class TestHelper {
 		backwardHelper.assertAllFlowFunctionsUsed();
 	}
 	
-	private IFDSTabulationProblem<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>> createTabulationProblem(final boolean followReturnsPastSeeds, final String[] initialSeeds) {
+	private IFDSTabulationProblem<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>, DummyMeta> createTabulationProblem(final boolean followReturnsPastSeeds, final String[] initialSeeds) {
 		final InterproceduralCFG<Statement, TestMethod> icfg = buildIcfg();
-		final FlowFunctions<Statement, JoinableFact, TestMethod> flowFunctions = flowFunctions();
+		final FlowFunctions<Statement, JoinableFact, TestMethod, DummyMeta> flowFunctions = flowFunctions();
 		
-		return new IFDSTabulationProblem<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>>() {
+		return new IFDSTabulationProblem<Statement, JoinableFact, TestMethod, InterproceduralCFG<Statement, TestMethod>, DummyMeta>() {
 
 			@Override
 			public boolean followReturnsPastSeeds() {
@@ -449,7 +454,7 @@ public class TestHelper {
 			}
 
 			@Override
-			public FlowFunctions<Statement, JoinableFact, TestMethod> flowFunctions() {
+			public FlowFunctions<Statement, JoinableFact, TestMethod, DummyMeta> flowFunctions() {
 				return flowFunctions;
 			}
 

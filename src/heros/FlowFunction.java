@@ -30,11 +30,15 @@ import java.util.Set;
  * any mutable shared state.
  * 
  * @param <D> The type of data-flow facts to be computed by the tabulation problem.
+ * @param <X> The type of meta information
+ *
  */
-public interface FlowFunction<D> {
+public interface FlowFunction<D, X> {
 
 	/**
 	 * Returns the target values reachable from the source.
 	 */
 	Set<D> computeTargets(D source);
+
+	X getMeta();
 }

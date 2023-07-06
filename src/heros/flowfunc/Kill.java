@@ -24,7 +24,7 @@ import java.util.Set;
  *
  * @param <D> The type of data-flow facts to be computed by the tabulation problem.
  */
-public class Kill<D> implements FlowFunction<D> {
+public class Kill<D,X> implements FlowFunction<D,X> {
 	
 	private final D killValue;
 	
@@ -39,5 +39,10 @@ public class Kill<D> implements FlowFunction<D> {
 			return singleton(source);
                 }
 	}
-	
+
+	@Override
+	public X getMeta() {
+		return null;
+	}
+
 }

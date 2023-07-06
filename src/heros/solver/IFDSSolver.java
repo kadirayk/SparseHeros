@@ -38,7 +38,7 @@ import java.util.Set;
  * @param <I> The type of inter-procedural control-flow graph being used.
  * @see IFDSTabulationProblem
  */
-public class IFDSSolver<N,D,M,I extends InterproceduralCFG<N, M>> extends IDESolver<N,D,M,IFDSSolver.BinaryDomain,I> {
+public class IFDSSolver<N,D,M,I extends InterproceduralCFG<N, M>,X> extends IDESolver<N,D,M,IFDSSolver.BinaryDomain,I,X> {
 
 	protected static enum BinaryDomain { TOP,BOTTOM } 
 	
@@ -48,15 +48,15 @@ public class IFDSSolver<N,D,M,I extends InterproceduralCFG<N, M>> extends IDESol
 	 * Creates a solver for the given problem. The solver must then be started by calling
 	 * {@link #solve()}.
 	 */
-	public IFDSSolver(final IFDSTabulationProblem<N,D,M,I> ifdsProblem) {
+	public IFDSSolver(final IFDSTabulationProblem<N,D,M,I,X> ifdsProblem) {
 		super(createIDETabulationProblem(ifdsProblem));
 	}
 
-	static <N, D, M, I extends InterproceduralCFG<N, M>> IDETabulationProblem<N, D, M, BinaryDomain, I> createIDETabulationProblem(
-			final IFDSTabulationProblem<N, D, M, I> ifdsProblem) {
-		return new IDETabulationProblem<N,D,M,BinaryDomain,I>() {
+	static <N, D, M, I extends InterproceduralCFG<N, M>,X> IDETabulationProblem<N, D, M, BinaryDomain, I,X> createIDETabulationProblem(
+			final IFDSTabulationProblem<N, D, M, I,X> ifdsProblem) {
+		return new IDETabulationProblem<N,D,M,BinaryDomain,I,X>() {
 
-			public FlowFunctions<N,D,M> flowFunctions() {
+			public FlowFunctions<N,D,M,X> flowFunctions() {
 				return ifdsProblem.flowFunctions();
 			}
 
