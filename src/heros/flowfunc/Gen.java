@@ -28,10 +28,12 @@ public class Gen<D,X> implements FlowFunction<D,X> {
 	
 	private final D genValue;
 	private final D zeroValue;
+	private final X info;
 	
-	public Gen(D genValue, D zeroValue){
+	public Gen(D genValue, D zeroValue, X info){
 		this.genValue = genValue;
 		this.zeroValue = zeroValue;
+		this.info = info;
 	} 
 
 	public Set<D> computeTargets(D source) {
@@ -44,7 +46,7 @@ public class Gen<D,X> implements FlowFunction<D,X> {
 
 	@Override
 	public X getMeta() {
-		return null;
+		return info;
 	}
 
 }

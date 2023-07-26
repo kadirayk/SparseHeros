@@ -19,10 +19,15 @@ import java.util.Set;
 
 public class Identity<D,X> implements FlowFunction<D,X> {
 	
-	@SuppressWarnings("rawtypes")
-	private final static Identity instance = new Identity();
+	//@SuppressWarnings("rawtypes")
+	//private final static Identity instance = new Identity();
 	
-	private Identity(){} //use v() instead
+	//private Identity(){} //use v() instead
+	private final X info;
+
+	public Identity(X info){
+		this.info = info;
+	}
 
 	public Set<D> computeTargets(D source) {
 		return singleton(source);
@@ -30,12 +35,12 @@ public class Identity<D,X> implements FlowFunction<D,X> {
 
 	@Override
 	public X getMeta() {
-		return null;
+		return info;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <D,X> Identity<D,X> v() {
-		return instance;
-	}
+	//@SuppressWarnings("unchecked")
+	//public static <D,X> Identity<D,X> v() {
+	//	return instance;
+	//}
 
 }

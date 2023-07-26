@@ -61,7 +61,7 @@ public class ZeroedFlowFunctions<N, D, M,X> implements FlowFunctions<N, D, M,X> 
 
 		@Override
 		public X getMeta() {
-			return null;
+			return del.getMeta();
 		}
 
 	}

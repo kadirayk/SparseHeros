@@ -27,9 +27,11 @@ import java.util.Set;
 public class Kill<D,X> implements FlowFunction<D,X> {
 	
 	private final D killValue;
+	private final X info;
 	
-	public Kill(D killValue){
+	public Kill(D killValue, X info){
 		this.killValue = killValue;
+		this.info = info;
 	} 
 
 	public Set<D> computeTargets(D source) {
@@ -42,7 +44,7 @@ public class Kill<D,X> implements FlowFunction<D,X> {
 
 	@Override
 	public X getMeta() {
-		return null;
+		return info;
 	}
 
 }

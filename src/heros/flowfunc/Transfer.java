@@ -22,10 +22,12 @@ public class Transfer<D,X> implements FlowFunction<D,X> {
 	
 	private final D toValue;
 	private final D fromValue;
+	private final X info;
 	
-	public Transfer(D toValue, D fromValue){
+	public Transfer(D toValue, D fromValue, X info){
 		this.toValue = toValue;
 		this.fromValue = fromValue;
+		this.info = info;
 	} 
 
 	public Set<D> computeTargets(D source) {
@@ -40,7 +42,7 @@ public class Transfer<D,X> implements FlowFunction<D,X> {
 
 	@Override
 	public X getMeta() {
-		return null;
+		return info;
 	}
 
 }

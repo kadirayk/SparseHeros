@@ -39,19 +39,19 @@ public class Union<D,X> implements FlowFunction<D,X> {
 
 	@Override
 	public X getMeta() {
-		return null;
+		return funcs[0].getMeta();
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static <D,X> FlowFunction<D,X> union(FlowFunction<D,X>... funcs) {
 		List<FlowFunction<D,X>> list = new ArrayList<FlowFunction<D,X>>();
 		for (FlowFunction<D,X> f : funcs) {
-			if(f!=Identity.v()) {
+			if(!(f instanceof Identity)) {
 				list.add(f);
 			}
 		}
 		if(list.size()==1) return list.get(0);
-		else if(list.isEmpty()) return Identity.v();
+		else if(list.isEmpty()) return new Identity<>(list.get(0).getMeta()); // TODO: check
 		return new Union(list.toArray(new FlowFunction[list.size()]));
 	}
 	
