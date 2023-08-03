@@ -142,7 +142,7 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>> {
 
     protected SparseCFGBuilder sparseCFGBuilder;
 
-    private boolean disableReturnSiteSparsification = true;
+    private boolean disableReturnSiteSparsification = false;
 
     /**
      * Creates a solver for the given problem, which caches flow functions and edge functions.
