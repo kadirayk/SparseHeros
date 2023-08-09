@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import heros.solver.*;
+import heros.spcall.DToCalleRelevanceFinder;
+import heros.spcall.DToCalleeRelevanceCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,6 +120,9 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
     public long propagationCount;
 
     @DontSynchronize("benign races")
+    public long possibleCalleeCount;
+
+    @DontSynchronize("benign races")
     public long durationFlowFunctionConstruction;
 
     @DontSynchronize("benign races")
@@ -143,7 +148,8 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
     @SynchronizedBy("use of ConcurrentHashMap")
     private SparseCFGCache sparseCFGCache;
 
-    protected SparseCFGBuilder sparseCFGBuilder;
+    @SynchronizedBy("use of ConcurrentHashMap")
+    private DToCalleeRelevanceCache dToCalleeRelevanceCache;
 
     private boolean disableReturnSiteSparsification = true;
 
@@ -153,8 +159,8 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
      * Creates a solver for the given problem, which caches flow functions and edge functions.
      * The solver must then be started by calling {@link #solve()}.
      */
-    public SparseIDESolver(IDETabulationProblem<N, D, M, V, I,X> tabulationProblem, SparseCFGBuilder<N, M, D> sparseCFGBuilder) {
-        this(tabulationProblem, sparseCFGBuilder, DEFAULT_CACHE_BUILDER, DEFAULT_CACHE_BUILDER);
+    public SparseIDESolver(IDETabulationProblem<N, D, M, V, I,X> tabulationProblem, SparseCFGBuilder<N, M, D> sparseCFGBuilder, DToCalleRelevanceFinder<M, D> dToCalleRelevanceFinder) {
+        this(tabulationProblem, sparseCFGBuilder, dToCalleRelevanceFinder, DEFAULT_CACHE_BUILDER, DEFAULT_CACHE_BUILDER);
     }
 
     /**
@@ -164,7 +170,8 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
      * @param flowFunctionCacheBuilder A valid {@link CacheBuilder} or <code>null</code> if no caching is to be used for flow functions.
      * @param edgeFunctionCacheBuilder A valid {@link CacheBuilder} or <code>null</code> if no caching is to be used for edge functions.
      */
-    public SparseIDESolver(IDETabulationProblem<N, D, M, V, I,X> tabulationProblem, SparseCFGBuilder<N, M, D> sparseCFGBuilder, @SuppressWarnings("rawtypes") CacheBuilder flowFunctionCacheBuilder, @SuppressWarnings("rawtypes") CacheBuilder edgeFunctionCacheBuilder) {
+    public SparseIDESolver(IDETabulationProblem<N, D, M, V, I,X> tabulationProblem,
+                           SparseCFGBuilder<N, M, D> sparseCFGBuilder, DToCalleRelevanceFinder<M, D> dToCalleeRelevanceFinder, @SuppressWarnings("rawtypes") CacheBuilder flowFunctionCacheBuilder, @SuppressWarnings("rawtypes") CacheBuilder edgeFunctionCacheBuilder) {
         if (logger.isDebugEnabled()) {
             if (flowFunctionCacheBuilder != null)
                 flowFunctionCacheBuilder = flowFunctionCacheBuilder.recordStats();
@@ -204,6 +211,7 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
             throw new RuntimeException("SparseCFGBuilder implementation must be set by the sub class");
         }
         this.sparseCFGCache = SparseCFGCache.getInstance(sparseCFGBuilder);
+        this.dToCalleeRelevanceCache = DToCalleeRelevanceCache.getInstance(dToCalleeRelevanceFinder);
     }
 
     /**
@@ -347,12 +355,26 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
 
         //for each possible callee
         Collection<M> callees = icfg.getCalleesOfCallAt(n);
+        if(callees.size()>1){
+            System.out.println("multi: " + callees.size());
+        }
         for (M sCalledProcN : callees) { //still line 14
 
             //compute the call-flow function
             FlowFunction<D,X> function = flowFunctions.getCallFlowFunction(n, sCalledProcN);
             flowFunctionConstructionCount++;
             Set<D> res = computeCallFlowFunction(function, d1, d2);
+
+            if(res.size()>1){
+                throw new RuntimeException("Unexpected mapping to callee's context m:" + sCalledProcN + " from: " + d2 + " to: " + res.stream().map(m->m.toString()).collect(Collectors.joining()));
+            }
+
+            for (D d : res) {
+                if(!dToCalleeRelevanceCache.isRelevant(sCalledProcN, d)){
+                    return; // not relevant for d
+                }
+            }
+
             //for each callee's start point(s)
             Collection<N> startPointsOf = icfg.getStartPointsOf(sCalledProcN);
             for (N sP : startPointsOf) {

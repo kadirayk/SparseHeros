@@ -5,6 +5,7 @@ import heros.edgefunc.AllBottom;
 import heros.edgefunc.AllTop;
 import heros.edgefunc.EdgeIdentity;
 import heros.solver.IDESolver;
+import heros.spcall.DToCalleRelevanceFinder;
 
 import java.util.Map;
 import java.util.Set;
@@ -31,8 +32,8 @@ public class SparseIFDSSolver<N,D,M,I extends InterproceduralCFG<N, M>,X> extend
      * Creates a solver for the given problem. The solver must then be started by calling
      * {@link #solve()}.
      */
-    public SparseIFDSSolver(final IFDSTabulationProblem<N,D,M,I,X> ifdsProblem, final SparseCFGBuilder sparseCFGBuilder) {
-        super(createIDETabulationProblem(ifdsProblem), sparseCFGBuilder);
+    public SparseIFDSSolver(final IFDSTabulationProblem<N,D,M,I,X> ifdsProblem, final SparseCFGBuilder sparseCFGBuilder, final DToCalleRelevanceFinder dToCalleRelevanceFinder) {
+        super(createIDETabulationProblem(ifdsProblem), sparseCFGBuilder, dToCalleRelevanceFinder);
     }
 
     static <N, D, M, I extends InterproceduralCFG<N, M>,X> IDETabulationProblem<N, D, M, BinaryDomain, I,X> createIDETabulationProblem(
