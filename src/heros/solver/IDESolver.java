@@ -14,7 +14,6 @@
 package heros.solver;
 
 
-import fj.data.vector.V;
 import heros.DontSynchronize;
 import heros.EdgeFunction;
 import heros.EdgeFunctionCache;
@@ -29,7 +28,6 @@ import heros.SynchronizedBy;
 import heros.ZeroedFlowFunctions;
 import heros.edgefunc.EdgeIdentity;
 
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -38,7 +36,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.checkerframework.checker.units.qual.N;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,6 +152,8 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>,X> {
 	protected final boolean computeValues;
 
 	private boolean recordEdges;
+
+	private boolean logMeta = false;
 
 	/**
 	 * Creates a solver for the given problem, which caches flow functions and edge functions.
@@ -423,7 +422,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>,X> {
 	protected Set<D> computeCallFlowFunction
 			(FlowFunction<D,X> callFlowFunction, D d1, D d2) {
 		Set<D> out = callFlowFunction.computeTargets(d2);
-		logMeta(callFlowFunction, d2, out);
+		logMeta(callFlowFunction, d2, out, true);
 		return out;
 	}
 
@@ -439,7 +438,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>,X> {
 	protected Set<D> computeCallToReturnFlowFunction
 			(FlowFunction<D,X> callToReturnFlowFunction, D d1, D d2) {
 		Set<D> out = callToReturnFlowFunction.computeTargets(d2);
-		logMeta(callToReturnFlowFunction, d2, out);
+		logMeta(callToReturnFlowFunction, d2, out, false);
 		return out;
 	}
 	
@@ -584,7 +583,7 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>,X> {
 	protected Set<D> computeReturnFlowFunction
 			(FlowFunction<D,X> retFunction, D d1, D d2, N callSite, Set<D> callerSideDs) {
 		Set<D> out = retFunction.computeTargets(d2);
-		logMeta(retFunction, d2, out);
+		logMeta(retFunction, d2, out, true);
 		return out;
 	}
 
@@ -622,31 +621,31 @@ public class IDESolver<N,D,M,V,I extends InterproceduralCFG<N, M>,X> {
 	protected Set<D> computeNormalFlowFunction
 			(FlowFunction<D,X> flowFunction, D d1, D d2) {
 		Set<D> out = flowFunction.computeTargets(d2);
-		logMeta(flowFunction, d2, out);
+		logMeta(flowFunction, d2, out, false);
 		return out;
 	}
 
-	private void logMeta(FlowFunction<D, X> flowFunction, D d2, Set<D> out) {
-		X meta = flowFunction.getMeta();
-		String val = meta == null ? "null" : meta.toString();
-		if(!isId(d2, out)){
-//			System.out.println("stmt:" + val + "\n" +
-//					"in:" + d2 + "\n" +
-//					"out:" + out.stream().map(Objects::toString).collect(Collectors.joining(",")) + "\n");
-			String line = val + "," + d2 + "," + out.stream().map(Objects::toString).collect(Collectors.joining("-")) + "\n";
-			try(FileWriter flowfunctionsFile = new FileWriter("out/flowfunctions.csv", true)){
-				flowfunctionsFile.write(line);
-			} catch (IOException e) {
-				e.printStackTrace();
+	private void logMeta(FlowFunction<D, X> flowFunction, D d2, Set<D> out, boolean call) {
+		if(logMeta){
+			X meta = flowFunction.getMeta();
+			String val = meta == null ? "null" : meta.toString();
+			if((!call && !isId(d2, out)) || (call && !isContextMapKill(d2, out))){
+				String line = val + "," + d2 + "," + out.stream().map(Objects::toString).sorted().collect(Collectors.joining("-")) + "\n";
+				try(FileWriter flowfunctionsFile = new FileWriter("out/flowfunctions.csv", true)){
+					flowfunctionsFile.write(line);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
 
 	private boolean isId(D in, Set<D> out){
-		if(out.size()==1 && out.contains(in)){
-			return true;
-		}
-		return false;
+		return out.size()==1 && out.contains(in);
+	}
+
+	private boolean isContextMapKill(D in, Set<D> out){
+		return out.size()==0;
 	}
 
 	/**

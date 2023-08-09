@@ -14,10 +14,13 @@ import heros.SynchronizedBy;
 import heros.ZeroedFlowFunctions;
 import heros.edgefunc.EdgeIdentity;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import heros.solver.*;
 import org.slf4j.Logger;
@@ -143,6 +146,8 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
     protected SparseCFGBuilder sparseCFGBuilder;
 
     private boolean disableReturnSiteSparsification = true;
+
+    private boolean logMeta = false;
 
     /**
      * Creates a solver for the given problem, which caches flow functions and edge functions.
@@ -451,7 +456,9 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
      */
     protected Set<D> computeCallFlowFunction
     (FlowFunction<D,X> callFlowFunction, D d1, D d2) {
-        return callFlowFunction.computeTargets(d2);
+        Set<D> out = callFlowFunction.computeTargets(d2);
+        logMeta(callFlowFunction, d2, out, true);
+        return out;
     }
 
     /**
@@ -466,7 +473,9 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
      */
     protected Set<D> computeCallToReturnFlowFunction
     (FlowFunction<D,X> callToReturnFlowFunction, D d1, D d2) {
-        return callToReturnFlowFunction.computeTargets(d2);
+        Set<D> out = callToReturnFlowFunction.computeTargets(d2);
+        logMeta(callToReturnFlowFunction, d2, out, false);
+        return out;
     }
 
     /**
@@ -608,7 +617,9 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
      */
     protected Set<D> computeReturnFlowFunction
     (FlowFunction<D,X> retFunction, D d1, D d2, N callSite, Set<D> callerSideDs) {
-        return retFunction.computeTargets(d2);
+        Set<D> out = retFunction.computeTargets(d2);
+        logMeta(retFunction, d2, out, true);
+        return out;
     }
 
     /**
@@ -663,8 +674,34 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
      */
     protected Set<D> computeNormalFlowFunction
     (FlowFunction<D,X> flowFunction, D d1, D d2) {
-        return flowFunction.computeTargets(d2);
+        Set<D> out = flowFunction.computeTargets(d2);
+        logMeta(flowFunction, d2, out, false);
+        return out;
     }
+
+    private void logMeta(FlowFunction<D, X> flowFunction, D d2, Set<D> out, boolean call) {
+        if(logMeta){
+            X meta = flowFunction.getMeta();
+            String val = meta == null ? "null" : meta.toString();
+            if((!call && !isId(d2, out)) || (call && !isContextMapKill(d2, out))){
+                String line = val + "," + d2 + "," + out.stream().map(Objects::toString).sorted().collect(Collectors.joining("-")) + "\n";
+                try(FileWriter flowfunctionsFile = new FileWriter("out/sp-flowfunctions.csv", true)){
+                    flowfunctionsFile.write(line);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private boolean isId(D in, Set<D> out){
+        return out.size()==1 && out.contains(in);
+    }
+
+    private boolean isContextMapKill(D in, Set<D> out){
+        return out.size()==0;
+    }
+
 
     /**
      * Propagates the flow further down the exploded super graph, merging any edge function that might
