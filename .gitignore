@@ -12,3 +12,4 @@ heros-trunk.jar
 /target/
 /.idea
 *.iml
+/.idea/workspace.xml
