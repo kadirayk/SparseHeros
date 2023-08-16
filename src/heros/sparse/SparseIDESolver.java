@@ -358,6 +358,7 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
         if(callees.size()>1){
             System.out.println("multi: " + callees.size());
         }
+        l1:
         for (M sCalledProcN : callees) { //still line 14
 
             //compute the call-flow function
@@ -371,7 +372,8 @@ public class SparseIDESolver<N, D, M, V, I extends InterproceduralCFG<N, M>,X> {
 
             for (D d : res) {
                 if(!dToCalleeRelevanceCache.isRelevant(sCalledProcN, d)){
-                    return; // not relevant for d
+                    System.out.println("Not relevant " + sCalledProcN + " - " + d);
+                    //continue l1; // not relevant for d
                 }
             }
 
